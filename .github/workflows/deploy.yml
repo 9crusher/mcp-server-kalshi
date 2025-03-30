@@ -27,10 +27,15 @@ jobs:
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
     
     - name: Install dependencies
-      run: uv pip install build
+      run: |
+        uv venv
+        source .venv/bin/activate
+        uv pip install build
     
     - name: Build package
-      run: python -m build
+      run: |
+        source .venv/bin/activate
+        python -m build
     
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1 
