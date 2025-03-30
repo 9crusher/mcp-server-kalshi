@@ -1,5 +1,5 @@
 # MCP Server Kalshi
-This is a MCP server 
+This is an MCP server for the Kalshi REST API
 
 
 ## Local Development
