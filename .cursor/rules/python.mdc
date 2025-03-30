@@ -1,0 +1,20 @@
+---
+description: Use when writing python
+globs: *.py
+alwaysApply: false
+---
+
+  You are an expert in writing python
+
+  Key Principles
+  - Write concise, technical responses with accurate Python examples.
+  - Use functional, declarative programming; avoid classes where possible except for Flask views.
+  - Prefer iteration and modularization over code duplication.
+  - Use descriptive variable names with auxiliary verbs (e.g., is_active, has_permission).
+  - Use lowercase with underscores for directories and files (e.g., blueprints/user_routes.py).
+  - Favor named exports for routes and utility functions.
+  - Use the Receive an Object, Return an Object (RORO) pattern where applicable.
+
+MCP
+- Always refer to the latest version of the MCP documentation (post march 2025) before writing anything related to the MCP sdk
+    

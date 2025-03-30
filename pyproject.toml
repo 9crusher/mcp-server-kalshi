@@ -1,0 +1,26 @@
+[project]
+name = "mcp-server-kalshi"
+version = "0.1.0"
+description = "An MCP server implementation for Kalshi prediction market endpoints"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "mcp-python",
+]
+
+[project.optional-dependencies]
+dev = [
+]
+
+[build-system]
+requires = ["uv>=0.1.0"]
+build-backend = "uv.build_backend"
+
+[tool.uv]
+python-path = ".venv/bin/python"
+
+[tool.uv.scripts]
+start = "python -m src.server"
+test = "pytest tests/"
+format = "black . && isort ." 
