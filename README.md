@@ -1,6 +1,46 @@
 # MCP Server Kalshi
 This is an MCP server for the Kalshi REST API
 
+## Configuration
+
+### Claud Desktop
+<details>
+<summary>Setting up with UVX</summary>
+```
+"mcpServers": {
+  "kalshi": {
+    "command": "uvx",
+    "args": ["mcp-server-kalshi"],
+    "env": {
+        "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR RSA KEY FILE",
+        "KALSHI_API_KEY": "<YOUR KALSHI API KEY>",
+        "BASE_URL": "https://api.elections.kalshi.com""
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary>Setting up with Docker</summary>
+1. Build the container from root directory `docker build -t mcp-server-kalshi .`
+
+2. Configure client to run the container (ensure the bind command gives the container access to your rsa key files)
+```
+"mcpServers": {
+  "kalshi": {
+    "command": "docker",
+    "args": ["run", "--rm", "-i", "--mount", "type=bind,src=/Users/username,dst=/Users/username", "-e", "KALSHI_PRIVATE_KEY_PATH", "-e", "KALSHI_API_KEY","-e", "BASE_URL", "mcp-server-kalshi"],
+    "env": {
+        "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR RSA KEY FILE",
+        "KALSHI_API_KEY": "<YOUR KALSHI API KEY>",
+        "BASE_URL": "https://api.elections.kalshi.com""
+    }
+  }
+}
+```
+</details>
+
 
 ## Local Development
 1. Create a `.env` file in the root directory with the following variables
@@ -48,6 +88,10 @@ To run in claud desktop, update your MCP config to:
     }
 }
 ```
+
+
+
+
 
 
 
