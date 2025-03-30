@@ -5,22 +5,29 @@ description = "An MCP server implementation for Kalshi prediction market endpoin
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
+
 dependencies = [
-    "mcp-python",
+    "mcp>=1.6.0",
+    "cryptography",
+    "pydantic",
+    "pydantic-settings",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "black"
 ]
 
 [build-system]
-requires = ["uv>=0.1.0"]
-build-backend = "uv.build_backend"
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.uv]
-python-path = ".venv/bin/python"
+[tool.setuptools]
+packages = ["mcp_server_kalshi"]
+package-dir = { "" = "src" }
 
-[tool.uv.scripts]
-start = "python -m src.server"
-test = "pytest tests/"
-format = "black . && isort ." 
+[project.scripts]
+start = "mcp_server_kalshi.server:main"
+mcp-server-kalshi = "mcp_server_kalshi.server:main"
+test = "pytest:main"
+format = "black:main" 

@@ -4,7 +4,7 @@ globs: *.py
 alwaysApply: false
 ---
 
-  You are an expert in writing python
+  You are an expert in writing python. Always refer to the documentation on model context protocol 2025-03-26 before writing MCP client code. https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/transports/#streamable-http
 
   Key Principles
   - Write concise, technical responses with accurate Python examples.

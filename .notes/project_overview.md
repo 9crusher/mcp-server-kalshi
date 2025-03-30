@@ -11,3 +11,5 @@
     - Anthropic MCP SDK
     - Python
     - uv
+
+    (Latest mcp is 2025-03-26)
