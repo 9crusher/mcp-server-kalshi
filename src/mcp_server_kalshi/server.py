@@ -60,6 +60,15 @@ async def handle_list_tools() -> list[types.Tool]:
                 "additionalProperties": False,
             },
         ),
+        types.Tool(
+            name="get_balance",
+            description="Get the portfolio balance of the logged-in member in cents",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
+            },
+        ),
     ]
 
 
@@ -80,7 +89,13 @@ async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent
                 market_ticker=arguments.get("market_ticker"),
                 event_ticker=arguments.get("event_ticker"),
             )
-            return [types.TextContent(type="text", text=str(positions_data))]
+            return [types.TextContent(type="text", text=str(positions_data) + " values in cents")]
+        except Exception as e:
+            raise e
+    elif name == "get_balance":
+        try:
+            balance_data = await kalshi_client.get_balance()
+            return [types.TextContent(type="text", text=str(balance_data) + " cents")]
         except Exception as e:
             raise e
 

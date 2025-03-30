@@ -196,3 +196,47 @@ class KalshiAPIClient(BaseAPIClient):
             params["event_ticker"] = event_ticker
 
         return await self.get("/trade-api/v2/portfolio/positions", params)
+
+    async def get_balance(self) -> Dict[str, Any]:
+        """
+        Get the portfolio balance of the logged-in member in cents.
+
+        Returns:
+            Dictionary containing balance data including available balance,
+            portfolio value, total returns, etc.
+        """
+        return await self.get("/trade-api/v2/portfolio/balance")
+
+    async def get_orders(
+        self,
+        limit: int = 100,
+        cursor: Optional[str] = None,
+        status: Optional[str] = None,
+        market_ticker: Optional[str] = None,
+        event_ticker: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Get all orders for the member.
+
+        Args:
+            limit: Number of results per page (1-1000, default 100)
+            cursor: Pagination cursor for the next page of results
+            status: Filter orders by status (open, filled, cancelled, etc.)
+            market_ticker: Filter orders by market ticker
+            event_ticker: Filter orders by event ticker
+
+        Returns:
+            Dictionary containing orders data
+        """
+        params = {"limit": limit}
+
+        if cursor:
+            params["cursor"] = cursor
+        if status:
+            params["status"] = status
+        if market_ticker:
+            params["market_ticker"] = market_ticker
+        if event_ticker:
+            params["event_ticker"] = event_ticker
+
+        return await self.get("/trade-api/v2/portfolio/orders", params)
