@@ -17,9 +17,8 @@ class Settings(BaseSettings):
     KALSHI_API_KEY: SecretStr = Field(..., description="Kalshi API key")
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore")
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
 
 @lru_cache()

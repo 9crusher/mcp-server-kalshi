@@ -18,55 +18,53 @@ kalshi_client = KalshiAPIClient(
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
     return [
-    types.Tool(
-        name="get_markets",
-        description="Get a list of markets",
-        inputSchema={
-            "type": "object",
-            "properties": {},
-            "additionalProperties": False
-        }
-    ),
-    types.Tool(
-        name="get_positions",
-        description="Get a list of all of your positions",
-        inputSchema={
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer",
-                    "description": "Number of results per page (1-1000)",
-                    "default": 100
-                },
-                "cursor": {
-                    "type": "string",
-                    "description": "Pagination cursor for the next page of results"
-                },
-                "status": {
-                    "type": "string",
-                    "description": "Filter positions by status",
-                    "enum": ["open", "settled", "expired"]
-                },
-                "market_ticker": {
-                    "type": "string",
-                    "description": "Filter positions by market ticker"
-                },
-                "event_ticker": {
-                    "type": "string",
-                    "description": "Filter positions by event ticker"
-                }
+        types.Tool(
+            name="get_markets",
+            description="Get a list of markets",
+            inputSchema={
+                "type": "object",
+                "properties": {},
+                "additionalProperties": False,
             },
-            "required": [],
-            "additionalProperties": False
-        },
-    )
-]
+        ),
+        types.Tool(
+            name="get_positions",
+            description="Get a list of all of your positions",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "description": "Number of results per page (1-1000)",
+                        "default": 100,
+                    },
+                    "cursor": {
+                        "type": "string",
+                        "description": "Pagination cursor for the next page of results",
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "Filter positions by status",
+                        "enum": ["open", "settled", "expired"],
+                    },
+                    "market_ticker": {
+                        "type": "string",
+                        "description": "Filter positions by market ticker",
+                    },
+                    "event_ticker": {
+                        "type": "string",
+                        "description": "Filter positions by event ticker",
+                    },
+                },
+                "required": [],
+                "additionalProperties": False,
+            },
+        ),
+    ]
 
 
 @server.call_tool()
-async def handle_call_tool(
-    name: str, arguments: dict
-) -> list[types.TextContent]:
+async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     if name == "get_markets":
         try:
             markets_data = await kalshi_client.get_markets()
@@ -102,6 +100,8 @@ async def run():
             ),
         )
 
+
 def main():
     import asyncio
+
     asyncio.run(run())
