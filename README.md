@@ -66,7 +66,7 @@ Then, set `BASE_URL=https://demo-api.kalshi.co` for this MCP server and update y
 ### UVX
 To run in MCP inspector
 ```bash
-npx @modelcontextprotocol/inspector uv --directory /Users/alexanderruchti/git/mcp-server-kalshi run start
+npx @modelcontextprotocol/inspector uv --directory /path/to/your/mcp-server-kalshi run start
 ```
 
 To run in claud desktop, update your MCP config to:
@@ -84,7 +84,7 @@ To run in claud desktop, update your MCP config to:
             "env": {
                 "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR RSA KEY FILE",
                 "KALSHI_API_KEY": "<YOUR KALSHI API KEY>",
-                "BASE_URL": "https://demo-api.kalshi.co"
+                "BASE_URL": "https://api.elections.kalshi.com"
             }
         }
     }
