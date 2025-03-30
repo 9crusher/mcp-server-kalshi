@@ -7,13 +7,12 @@ from functools import lru_cache
 class Settings(BaseSettings):
     """Application settings with environment variable loading and validation."""
 
-    # Prod url is "https://api.elections.kalshi.com"
     BASE_URL: str = Field(
-        default="https://demo-api.kalshi.co",
+        default="https://api.elections.kalshi.com",
         description="Base URL for the Kalshi API",
     )
     KALSHI_PRIVATE_KEY_PATH: str = Field(
-        default="./demo_kalshi.txt", description="Path to the Kalshi private key"
+        default="./rsa.key", description="Path to the Kalshi private key"
     )
     KALSHI_API_KEY: SecretStr = Field(..., description="Kalshi API key")
 
