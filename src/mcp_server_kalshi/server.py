@@ -72,7 +72,7 @@ async def handle_call_tool(
             markets_data = await kalshi_client.get_markets()
             return [types.TextContent(type="text", text=str(markets_data))]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Error fetching market data: {str(e)}")]
+            raise e
     elif name == "get_positions":
         try:
             positions_data = await kalshi_client.get_positions(
@@ -84,7 +84,7 @@ async def handle_call_tool(
             )
             return [types.TextContent(type="text", text=str(positions_data))]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+            raise e
 
 
 async def run():
