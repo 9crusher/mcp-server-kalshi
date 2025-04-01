@@ -4,7 +4,7 @@ globs: *.py
 alwaysApply: false
 ---
 
-  You are an expert in writing python. Always refer to the documentation on model context protocol 2025-03-26 before writing MCP client code. https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/transports/#streamable-http
+  You are an expert in writing python
 
   Key Principles
   - Write concise, technical responses with accurate Python examples.
@@ -14,7 +14,4 @@ alwaysApply: false
   - Use lowercase with underscores for directories and files (e.g., blueprints/user_routes.py).
   - Favor named exports for routes and utility functions.
   - Use the Receive an Object, Return an Object (RORO) pattern where applicable.
-
-MCP
-- Always refer to the latest version of the MCP documentation (post march 2025) before writing anything related to the MCP sdk
     

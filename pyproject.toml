@@ -31,3 +31,9 @@ start = "mcp_server_kalshi.server:main"
 mcp-server-kalshi = "mcp_server_kalshi.server:main"
 test = "pytest:main"
 format = "black:main" 
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"

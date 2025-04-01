@@ -1,0 +1,11 @@
+---
+description: 
+globs: **/request_schema.py
+alwaysApply: false
+---
+# Writing Request Schema Models
+
+- Ensure you can see the relevant kalshi api documentation in context
+- Write Pydantic models that match the request parameter schema exactly
+- Include documentation on what each field does
+- Include docmentation of whether the field is required
