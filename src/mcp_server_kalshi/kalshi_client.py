@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
+from .schema import GetPositionsRequest, GetOrdersRequest, GetFillsRequest, GetSettlementsRequest
 
 
 def load_private_key_from_file(file_path: str) -> rsa.RSAPrivateKey:
@@ -129,71 +130,20 @@ class KalshiAPIClient(BaseAPIClient):
         """Initialize the Kalshi API client with configured credentials"""
         super().__init__(**kwargs)
 
-    async def get_markets(
-        self,
-        limit: int = 100,
-        cursor: Optional[str] = None,
-        event_ticker: Optional[str] = None,
-        series_ticker: Optional[str] = None,
-        status: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """
-        Get a list of markets from Kalshi API.
-
-        Args:
-            limit: Number of results per page (1-1000, default 100)
-            cursor: Pagination cursor for the next page of results
-            event_ticker: Filter markets by event ticker
-            series_ticker: Filter markets by series ticker
-            status: Filter markets by status (unopened, open, closed, settled)
-
-        Returns:
-            Dictionary containing markets data
-        """
-        params = {"limit": limit}
-
-        if cursor:
-            params["cursor"] = cursor
-        if event_ticker:
-            params["event_ticker"] = event_ticker
-        if series_ticker:
-            params["series_ticker"] = series_ticker
-        if status:
-            params["status"] = status
-
-        return await self.get("/trade-api/v2/markets", params)
-
     async def get_positions(
         self,
-        limit: int = 100,
-        cursor: Optional[str] = None,
-        status: Optional[Literal["open", "settled", "expired"]] = None,
-        market_ticker: Optional[str] = None,
-        event_ticker: Optional[str] = None,
+        request: GetPositionsRequest,
     ) -> Dict[str, Any]:
         """
         Get all market positions for the member.
 
         Args:
-            limit: Number of results per page (1-1000, default 100)
-            cursor: Pagination cursor for the next page of results
-            status: Filter positions by status (open, settled, expired)
-            market_ticker: Filter positions by market ticker
-            event_ticker: Filter positions by event ticker
+            request: GetPositionsRequest
 
         Returns:
             Dictionary containing positions data
         """
-        params = {"limit": limit}
-
-        if cursor:
-            params["cursor"] = cursor
-        if status:
-            params["status"] = status
-        if market_ticker:
-            params["market_ticker"] = market_ticker
-        if event_ticker:
-            params["event_ticker"] = event_ticker
+        params = request.model_dump(exclude_none=True)
 
         return await self.get("/trade-api/v2/portfolio/positions", params)
 
@@ -209,34 +159,46 @@ class KalshiAPIClient(BaseAPIClient):
 
     async def get_orders(
         self,
-        limit: int = 100,
-        cursor: Optional[str] = None,
-        status: Optional[str] = None,
-        market_ticker: Optional[str] = None,
-        event_ticker: Optional[str] = None,
+        request: GetOrdersRequest,
     ) -> Dict[str, Any]:
         """
         Get all orders for the member.
 
-        Args:
-            limit: Number of results per page (1-1000, default 100)
-            cursor: Pagination cursor for the next page of results
-            status: Filter orders by status (open, filled, cancelled, etc.)
-            market_ticker: Filter orders by market ticker
-            event_ticker: Filter orders by event ticker
-
-        Returns:
-            Dictionary containing orders data
         """
-        params = {"limit": limit}
-
-        if cursor:
-            params["cursor"] = cursor
-        if status:
-            params["status"] = status
-        if market_ticker:
-            params["market_ticker"] = market_ticker
-        if event_ticker:
-            params["event_ticker"] = event_ticker
+        params = request.model_dump(exclude_none=True)
 
         return await self.get("/trade-api/v2/portfolio/orders", params)
+
+    async def get_fills(
+        self,
+        request: GetFillsRequest,
+    ) -> Dict[str, Any]:
+        """
+        Get all fills for the member.
+
+        Args:
+            request: GetFillsRequest
+
+        Returns:
+            Dictionary containing fills data
+        """
+        params = request.model_dump(exclude_none=True)
+
+        return await self.get("/trade-api/v2/portfolio/fills", params)
+
+    async def get_settlements(
+        self,
+        request: GetSettlementsRequest,
+    ) -> Dict[str, Any]:
+        """
+        Get all settlements for the member.
+
+        Args:
+            request: GetSettlementsRequest
+
+        Returns:
+            Dictionary containing settlements data
+        """
+        params = request.model_dump(exclude_none=True)
+
+        return await self.get("/trade-api/v2/portfolio/settlements", params)

@@ -3,7 +3,10 @@ import mcp.types as types
 from mcp.server.lowlevel import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .kalshi_client import KalshiAPIClient
+from .schema import GetPositionsRequest, GetOrdersRequest, GetFillsRequest, GetBalanceRequest, GetSettlementsRequest
 from .config import settings
+from functools import wraps
+from typing import Type, Callable, Any
 
 
 # Create a server instance
@@ -15,89 +18,96 @@ kalshi_client = KalshiAPIClient(
 )
 
 
+class ToolRegistry:
+    _tools: dict[str, tuple[types.Tool, Callable]] = {}
+
+    @classmethod
+    def register_tool(cls, name: str, description: str, input_schema: Type[Any]):
+        def decorator(handler: Callable):
+            @wraps(handler)
+            async def wrapped_handler(request: dict) -> list[types.TextContent]:
+                try:
+                    result = await handler(request)
+                    return [types.TextContent(type="text", text=str(result))]
+                except Exception as e:
+                    raise e
+            
+            cls._tools[name] = (
+                types.Tool(
+                    name=name,
+                    description=description,
+                    inputSchema=input_schema.model_json_schema(),
+                ),
+                wrapped_handler
+            )
+            return wrapped_handler
+        return decorator
+
+    @classmethod
+    def get_tools(cls) -> list[types.Tool]:
+        return [tool for tool, _ in cls._tools.values()]
+
+    @classmethod
+    def get_handler(cls, name: str) -> Callable:
+        if name not in cls._tools:
+            raise ValueError(f"Unknown tool: {name}")
+        return cls._tools[name][1]
+
+
+@ToolRegistry.register_tool(
+    name="get_positions",
+    description="Get a list of all of your positions",
+    input_schema=GetPositionsRequest
+)
+async def handle_get_positions(request: dict):
+    return await kalshi_client.get_positions(request=GetPositionsRequest(**request))
+
+
+@ToolRegistry.register_tool(
+    name="get_balance",
+    description="Get the portfolio balance of the logged-in member in cents",
+    input_schema=GetBalanceRequest
+)
+async def handle_get_balance(request: dict):
+    return await kalshi_client.get_balance()
+
+
+@ToolRegistry.register_tool(
+    name="get_orders",
+    description="Get a list of all of your orders",
+    input_schema=GetOrdersRequest
+)
+async def handle_get_orders(request: dict):
+    return await kalshi_client.get_orders(request=GetOrdersRequest(**request))
+
+
+@ToolRegistry.register_tool(
+    name="get_fills",
+    description="Get a list of all of your order fills",
+    input_schema=GetFillsRequest
+)
+async def handle_get_fills(request: dict):
+    return await kalshi_client.get_fills(request=GetFillsRequest(**request))
+
+
+@ToolRegistry.register_tool(
+    name="get_settlements",
+    description="Get a list of all of your settlements",
+    input_schema=GetSettlementsRequest
+)
+async def handle_get_settlements(request: dict):
+    return await kalshi_client.get_settlements(request=GetSettlementsRequest(**request))
+
+
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
-    return [
-        types.Tool(
-            name="get_markets",
-            description="Get a list of markets",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "additionalProperties": False,
-            },
-        ),
-        types.Tool(
-            name="get_positions",
-            description="Get a list of all of your positions",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "limit": {
-                        "type": "integer",
-                        "description": "Number of results per page (1-1000)",
-                        "default": 100,
-                    },
-                    "cursor": {
-                        "type": "string",
-                        "description": "Pagination cursor for the next page of results",
-                    },
-                    "status": {
-                        "type": "string",
-                        "description": "Filter positions by status",
-                        "enum": ["open", "settled", "expired"],
-                    },
-                    "market_ticker": {
-                        "type": "string",
-                        "description": "Filter positions by market ticker",
-                    },
-                    "event_ticker": {
-                        "type": "string",
-                        "description": "Filter positions by event ticker",
-                    },
-                },
-                "required": [],
-                "additionalProperties": False,
-            },
-        ),
-        types.Tool(
-            name="get_balance",
-            description="Get the portfolio balance of the logged-in member in cents",
-            inputSchema={
-                "type": "object",
-                "properties": {},
-                "additionalProperties": False,
-            },
-        ),
-    ]
+    return ToolRegistry.get_tools()
 
 
 @server.call_tool()
 async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-    if name == "get_markets":
-        try:
-            markets_data = await kalshi_client.get_markets()
-            return [types.TextContent(type="text", text=str(markets_data))]
-        except Exception as e:
-            raise e
-    elif name == "get_positions":
-        try:
-            positions_data = await kalshi_client.get_positions(
-                limit=arguments.get("limit", 100),
-                cursor=arguments.get("cursor"),
-                status=arguments.get("status"),
-                market_ticker=arguments.get("market_ticker"),
-                event_ticker=arguments.get("event_ticker"),
-            )
-            return [types.TextContent(type="text", text=str(positions_data) + " values in cents")]
-        except Exception as e:
-            raise e
-    elif name == "get_balance":
-        try:
-            balance_data = await kalshi_client.get_balance()
-            return [types.TextContent(type="text", text=str(balance_data) + " cents")]
-        except Exception as e:
-            raise e
+    handler = ToolRegistry.get_handler(name)
+    return await handler(arguments)
 
 
 async def run():
