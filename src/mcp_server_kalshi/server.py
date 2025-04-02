@@ -3,7 +3,14 @@ import mcp.types as types
 from mcp.server.lowlevel import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 from .kalshi_client import KalshiAPIClient
-from .schema import GetPositionsRequest, GetOrdersRequest, GetFillsRequest, GetBalanceRequest, GetSettlementsRequest
+from .schema import (
+    GetPositionsRequest,
+    GetOrdersRequest,
+    GetFillsRequest,
+    GetBalanceRequest,
+    GetSettlementsRequest,
+    CreateOrderRequest,
+)
 from .config import settings
 from functools import wraps
 from typing import Type, Callable, Any
@@ -31,16 +38,17 @@ class ToolRegistry:
                     return [types.TextContent(type="text", text=str(result))]
                 except Exception as e:
                     raise e
-            
+
             cls._tools[name] = (
                 types.Tool(
                     name=name,
                     description=description,
                     inputSchema=input_schema.model_json_schema(),
                 ),
-                wrapped_handler
+                wrapped_handler,
             )
             return wrapped_handler
+
         return decorator
 
     @classmethod
@@ -57,7 +65,7 @@ class ToolRegistry:
 @ToolRegistry.register_tool(
     name="get_positions",
     description="Get a list of all of your positions",
-    input_schema=GetPositionsRequest
+    input_schema=GetPositionsRequest,
 )
 async def handle_get_positions(request: dict):
     return await kalshi_client.get_positions(request=GetPositionsRequest(**request))
@@ -66,7 +74,7 @@ async def handle_get_positions(request: dict):
 @ToolRegistry.register_tool(
     name="get_balance",
     description="Get the portfolio balance of the logged-in member in cents",
-    input_schema=GetBalanceRequest
+    input_schema=GetBalanceRequest,
 )
 async def handle_get_balance(request: dict):
     return await kalshi_client.get_balance()
@@ -75,7 +83,7 @@ async def handle_get_balance(request: dict):
 @ToolRegistry.register_tool(
     name="get_orders",
     description="Get a list of all of your orders",
-    input_schema=GetOrdersRequest
+    input_schema=GetOrdersRequest,
 )
 async def handle_get_orders(request: dict):
     return await kalshi_client.get_orders(request=GetOrdersRequest(**request))
@@ -84,16 +92,25 @@ async def handle_get_orders(request: dict):
 @ToolRegistry.register_tool(
     name="get_fills",
     description="Get a list of all of your order fills",
-    input_schema=GetFillsRequest
+    input_schema=GetFillsRequest,
 )
 async def handle_get_fills(request: dict):
     return await kalshi_client.get_fills(request=GetFillsRequest(**request))
 
 
 @ToolRegistry.register_tool(
+    name="create_order",
+    description="Create an order to buy or sell contracts in a market",
+    input_schema=CreateOrderRequest,
+)
+async def handle_create_order(request: dict):
+    return await kalshi_client.create_order(request=CreateOrderRequest(**request))
+
+
+@ToolRegistry.register_tool(
     name="get_settlements",
     description="Get a list of all of your settlements",
-    input_schema=GetSettlementsRequest
+    input_schema=GetSettlementsRequest,
 )
 async def handle_get_settlements(request: dict):
     return await kalshi_client.get_settlements(request=GetSettlementsRequest(**request))

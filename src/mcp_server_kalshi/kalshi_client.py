@@ -9,7 +9,13 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
-from .schema import GetPositionsRequest, GetOrdersRequest, GetFillsRequest, GetSettlementsRequest
+from .schema import (
+    GetPositionsRequest,
+    GetOrdersRequest,
+    GetFillsRequest,
+    GetSettlementsRequest,
+    CreateOrderRequest,
+)
 
 
 def load_private_key_from_file(file_path: str) -> rsa.RSAPrivateKey:
@@ -122,6 +128,18 @@ class BaseAPIClient(ABC):
         response = await self.client.get(url, params=params, headers=headers)
         return await self._handle_response(response)
 
+    async def post(
+        self, endpoint: str, params: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Send an async POST request to the API.
+        """
+        headers = self.get_auth_headers("POST", endpoint)
+
+        url = f"{endpoint}"
+        response = await self.client.post(url, json=params, headers=headers)
+        return await self._handle_response(response)
+
 
 class KalshiAPIClient(BaseAPIClient):
     """A client for the Kalshi API"""
@@ -202,3 +220,14 @@ class KalshiAPIClient(BaseAPIClient):
         params = request.model_dump(exclude_none=True)
 
         return await self.get("/trade-api/v2/portfolio/settlements", params)
+
+    async def create_order(
+        self,
+        request: CreateOrderRequest,
+    ) -> Dict[str, Any]:
+        """
+        Create an order to buy or sell contracts in a market.
+        """
+        params = request.model_dump(exclude_none=True)
+
+        return await self.post("/trade-api/v2/portfolio/orders", params)
