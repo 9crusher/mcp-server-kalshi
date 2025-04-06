@@ -15,6 +15,7 @@ from .schema import (
     GetFillsRequest,
     GetSettlementsRequest,
     CreateOrderRequest,
+    GetEventRequest,
 )
 
 
@@ -231,3 +232,22 @@ class KalshiAPIClient(BaseAPIClient):
         params = request.model_dump(exclude_none=True)
 
         return await self.post("/trade-api/v2/portfolio/orders", params)
+
+    async def get_event(
+        self,
+        request: GetEventRequest,
+    ) -> Dict[str, Any]:
+        """
+        Get details about a specific event by its ticker.
+        
+        Args:
+            request: GetEventRequest containing the event_ticker
+            
+        Returns:
+            Dictionary containing event data including title, description,
+            markets, and other metadata.
+        """
+        event_ticker = request.event_ticker
+        endpoint = f"/trade-api/v2/events/{event_ticker}"
+        
+        return await self.get(endpoint)

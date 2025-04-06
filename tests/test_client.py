@@ -8,7 +8,8 @@ from mcp_server_kalshi.schema import (
     GetOrdersRequest,
     CreateOrderRequest,
     GetFillsRequest,
-    GetSettlementsRequest
+    GetSettlementsRequest,
+    GetEventRequest
 )
 
 @pytest.fixture
@@ -122,4 +123,51 @@ async def test_error_handling(kalshi_client):
         
         assert excinfo.value.response.status_code == 400
         assert excinfo.value.response.json() == mock_error_response
+
+@pytest.mark.asyncio
+async def test_get_event(kalshi_client):
+    # Mock response data
+    mock_event_response = {
+        "event": {
+            "event_ticker": "TEST-EVENT",
+            "title": "Test Event",
+            "description": "This is a test event",
+            "category": "Test Category",
+            "settlement_value": None,
+            "settlement_sourcing": {
+                "source": "Test Source",
+                "url": "https://example.com/source",
+                "notes": "Test notes"
+            },
+            "markets": [
+                {
+                    "ticker": "TEST-MKT-1",
+                    "title": "Test Market 1"
+                },
+                {
+                    "ticker": "TEST-MKT-2",
+                    "title": "Test Market 2"
+                }
+            ],
+            "event_status": "active",
+            "created_time": 1633123456789,
+            "last_updated_time": 1633123456789
+        }
+    }
+
+    # Create a mock response
+    mock_response = Mock(spec=httpx.Response)
+    mock_response.status_code = 200
+    mock_response.json.return_value = mock_event_response
+    mock_response.raise_for_status.return_value = None
+    mock_response.text = "mock_text"
+
+    # Patch the client's get method
+    with patch.object(kalshi_client.client, 'get', return_value=mock_response):
+        request = GetEventRequest(event_ticker="TEST-EVENT")
+        result = await kalshi_client.get_event(request)
+        
+        assert result == mock_event_response
+        assert result["event"]["event_ticker"] == "TEST-EVENT"
+        assert len(result["event"]["markets"]) == 2
 

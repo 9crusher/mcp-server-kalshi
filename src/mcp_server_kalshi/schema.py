@@ -207,3 +207,12 @@ class GetSettlementsRequest(MCPSchemaBaseModel):
     max_ts: Optional[int] = Field(
         default=None, description="Filter settlements before this timestamp"
     )
+
+
+class GetEventRequest(MCPSchemaBaseModel):
+    """Request schema for the GET /trade-api/v2/events/{event_ticker} endpoint."""
+
+    event_ticker: str = Field(
+        ..., description="The ticker of the event to retrieve"
+    )
+

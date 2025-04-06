@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+# Apply when asked to add a new tool based on API endpoint
+
+- Ensure you have access to the API docs
+- Copy ALL of the fields with COMPREHENSIVE descriptions of each into a [schema.py](mdc:src/mcp_server_kalshi/schema.py)
+- Create a new endpoint in [kalshi_client.py](mdc:src/mcp_server_kalshi/kalshi_client.py) that uses this request class
+- Write tests for the endpoint in @test_client.py
+- Create a new tool that uses the endpoint in [server.py](mdc:src/mcp_server_kalshi/server.py)

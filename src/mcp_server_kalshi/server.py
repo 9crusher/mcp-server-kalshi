@@ -10,10 +10,23 @@ from .schema import (
     GetBalanceRequest,
     GetSettlementsRequest,
     CreateOrderRequest,
+    GetEventRequest,
 )
 from .config import settings
 from functools import wraps
 from typing import Type, Callable, Any
+
+
+KALSHI_BACKGROUND_INFO = """
+Kalshi is a prediction market trading platform.
+
+Some key definitions you need to know:
+Event: A specific thing that can be bet on
+Market: A collection of events.
+For example:
+"Chicago high temperature" could be a market
+and "Chicago high temperature on April 5th 2025" could be an event
+"""
 
 
 # Create a server instance
@@ -114,6 +127,15 @@ async def handle_create_order(request: dict):
 )
 async def handle_get_settlements(request: dict):
     return await kalshi_client.get_settlements(request=GetSettlementsRequest(**request))
+
+
+@ToolRegistry.register_tool(
+    name="get_event",
+    description="Get details about a specific event by its ticker",
+    input_schema=GetEventRequest,
+)
+async def handle_get_event(request: dict):
+    return await kalshi_client.get_event(request=GetEventRequest(**request))
 
 
 @server.list_tools()
