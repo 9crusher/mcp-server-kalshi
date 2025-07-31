@@ -3,7 +3,7 @@ This is an MCP server for the Kalshi REST API
 
 ## Configuration
 
-### Claud Desktop
+### Claude Desktop
 <details>
 <summary>Setting up with UVX</summary>
 
