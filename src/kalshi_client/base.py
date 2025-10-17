@@ -1,20 +1,18 @@
 import httpx
 import base64
 import time
-from typing import Dict, List, Optional, Union, Literal
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from cryptography.hazmat.backends import default_backend
-from cryptography.exceptions import InvalidSignature
 
 
-def load_private_key_from_file(file_path: str) -> rsa.RSAPrivateKey:
+def load_private_key_from_file(file_path: str) -> str:
     """Load RSA private key from file."""
     with open(file_path, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(), password=None, backend=default_backend()
         )
-    return private_key
+    return str(private_key)
 
 
 def sign_pss_text(private_key: rsa.RSAPrivateKey, text: str) -> str:
@@ -32,9 +30,9 @@ def sign_pss_text(private_key: rsa.RSAPrivateKey, text: str) -> str:
 class KalshiAuth(httpx.Auth):
     """Custom auth handler for Kalshi API."""
 
-    def __init__(self, private_key: rsa.RSAPrivateKey, api_key: str | None):
-        self._private_key = private_key
-        self._api_key = api_key
+    def __init__(self, private_key: str | None, api_key: str | None):
+        self._private_key: str | None = private_key
+        self._api_key: str | None = api_key
 
     def auth_flow(self, request: httpx.Request):
         # Extract method and path for signature
