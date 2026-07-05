@@ -8,7 +8,9 @@ license = {text = "MIT"}
 
 dependencies = [
     "mcp>=1.6.0",
+    "httpx",
     "cryptography",
+    "pypdf",
     "pydantic == 2.12.0",
     "pydantic-settings == 2.11.0",
     "pytest_asyncio"
@@ -38,3 +40,5 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
