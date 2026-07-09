@@ -1,0 +1,44 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.9crusher/mcp-server-kalshi",
+  "description": "An MCP server for deep, end-to-end trading on Kalshi prediction markets: discover, research, read settlement rules, and execute trades.",
+  "repository": {
+    "url": "https://github.com/9crusher/mcp-server-kalshi",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "mcp-server-kalshi",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "transport": { "type": "stdio" },
+      "environmentVariables": [
+        {
+          "name": "KALSHI_ENV",
+          "description": "demo (sandbox) or prod (real money)",
+          "default": "demo",
+          "isRequired": false
+        },
+        {
+          "name": "KALSHI_API_KEY",
+          "description": "Kalshi API key ID; required only for portfolio/order tools",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "KALSHI_PRIVATE_KEY_PATH",
+          "description": "Path to your RSA private key .pem; required for authenticated tools",
+          "isRequired": false
+        },
+        {
+          "name": "BASE_URL",
+          "description": "Optional explicit REST base override (must include /trade-api/v2)",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

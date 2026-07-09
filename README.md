@@ -1,5 +1,7 @@
 # MCP Server Kalshi
 
+<!-- mcp-name: io.github.9crusher/mcp-server-kalshi -->
+
 An MCP server that gives Claude Code and other agent harnesses a first-class interface to
 [Kalshi](https://kalshi.com), the regulated prediction-market exchange. It is built for
 **deep, end-to-end trading**: browse markets, research them, read the *exact* settlement
