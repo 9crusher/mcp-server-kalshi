@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from .base import BaseAPIClient
 
@@ -24,8 +24,8 @@ def build_create_order_payload(
     self_trade_prevention_type: str = "taker_at_cross",
     post_only: bool = False,
     reduce_only: bool = False,
-    client_order_id: Optional[str] = None,
-    expiration_ts: Optional[int] = None,
+    client_order_id: str | None = None,
+    expiration_ts: int | None = None,
 ) -> dict:
     """Translate an intuitive (action, side, cents) order into the Kalshi V2 payload.
 
@@ -73,7 +73,7 @@ def build_amend_order_payload(
     side: str,
     count: float,
     limit_price_cents: int,
-    updated_client_order_id: Optional[str] = None,
+    updated_client_order_id: str | None = None,
 ) -> dict:
     """Build the Kalshi V2 amend body, using the same YES-leg translation as create."""
     action = action.lower()
@@ -93,14 +93,23 @@ def build_amend_order_payload(
 
 
 def build_decrease_order_payload(
-    reduce_by: Optional[float] = None, reduce_to: Optional[float] = None
+    reduce_by: float | None = None, reduce_to: float | None = None
 ) -> dict:
     """Build the Kalshi V2 decrease body. Exactly one of reduce_by / reduce_to required."""
     if (reduce_by is None) == (reduce_to is None):
         raise ValueError("Provide exactly one of reduce_by or reduce_to.")
     if reduce_by is not None:
-        return {"reduce_by": str(reduce_by) if reduce_by != int(reduce_by) else str(int(reduce_by))}
-    return {"reduce_to": str(reduce_to) if reduce_to != int(reduce_to) else str(int(reduce_to))}
+        return {
+            "reduce_by": (
+                str(reduce_by) if reduce_by != int(reduce_by) else str(int(reduce_by))
+            )
+        }
+    assert reduce_to is not None  # guaranteed by the exactly-one check above
+    return {
+        "reduce_to": (
+            str(reduce_to) if reduce_to != int(reduce_to) else str(int(reduce_to))
+        )
+    }
 
 
 class KalshiAPIClient(BaseAPIClient):
@@ -118,13 +127,13 @@ class KalshiAPIClient(BaseAPIClient):
         return await self.get("/exchange/schedule")
 
     # ---- Markets ------------------------------------------------------------------
-    async def get_markets(self, params: Optional[dict] = None) -> Any:
+    async def get_markets(self, params: dict | None = None) -> Any:
         return await self.get("/markets", params=params)
 
     async def get_market(self, ticker: str) -> Any:
         return await self.get(f"/markets/{ticker}")
 
-    async def get_market_orderbook(self, ticker: str, depth: Optional[int] = None) -> Any:
+    async def get_market_orderbook(self, ticker: str, depth: int | None = None) -> Any:
         params = {"depth": depth} if depth is not None else None
         return await self.get(f"/markets/{ticker}/orderbook", params=params)
 
@@ -134,8 +143,8 @@ class KalshiAPIClient(BaseAPIClient):
         start_ts: int,
         end_ts: int,
         period_interval: int,
-        series_ticker: Optional[str] = None,
-        include_latest_before_start: Optional[bool] = None,
+        series_ticker: str | None = None,
+        include_latest_before_start: bool | None = None,
     ) -> Any:
         series = series_ticker or series_ticker_from_market(ticker)
         params: dict[str, Any] = {
@@ -149,15 +158,15 @@ class KalshiAPIClient(BaseAPIClient):
             f"/series/{series}/markets/{ticker}/candlesticks", params=params
         )
 
-    async def get_market_trades(self, params: Optional[dict] = None) -> Any:
+    async def get_market_trades(self, params: dict | None = None) -> Any:
         return await self.get("/markets/trades", params=params)
 
     # ---- Events -------------------------------------------------------------------
-    async def get_events(self, params: Optional[dict] = None) -> Any:
+    async def get_events(self, params: dict | None = None) -> Any:
         return await self.get("/events", params=params)
 
     async def get_event(
-        self, event_ticker: str, with_nested_markets: Optional[bool] = None
+        self, event_ticker: str, with_nested_markets: bool | None = None
     ) -> Any:
         params = (
             {"with_nested_markets": with_nested_markets}
@@ -167,7 +176,7 @@ class KalshiAPIClient(BaseAPIClient):
         return await self.get(f"/events/{event_ticker}", params=params)
 
     # ---- Series -------------------------------------------------------------------
-    async def get_series_list(self, params: Optional[dict] = None) -> Any:
+    async def get_series_list(self, params: dict | None = None) -> Any:
         return await self.get("/series", params=params)
 
     async def get_series(self, series_ticker: str) -> Any:
@@ -178,20 +187,20 @@ class KalshiAPIClient(BaseAPIClient):
         self._require_auth()
         return await self.get("/portfolio/balance")
 
-    async def get_positions(self, params: Optional[dict] = None) -> Any:
+    async def get_positions(self, params: dict | None = None) -> Any:
         self._require_auth()
         return await self.get("/portfolio/positions", params=params)
 
-    async def get_fills(self, params: Optional[dict] = None) -> Any:
+    async def get_fills(self, params: dict | None = None) -> Any:
         self._require_auth()
         return await self.get("/portfolio/fills", params=params)
 
-    async def get_settlements(self, params: Optional[dict] = None) -> Any:
+    async def get_settlements(self, params: dict | None = None) -> Any:
         self._require_auth()
         return await self.get("/portfolio/settlements", params=params)
 
     # ---- Orders: reads (auth) -----------------------------------------------------
-    async def get_orders(self, params: Optional[dict] = None) -> Any:
+    async def get_orders(self, params: dict | None = None) -> Any:
         self._require_auth()
         return await self.get("/portfolio/orders", params=params)
 

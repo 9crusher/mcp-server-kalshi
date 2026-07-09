@@ -15,12 +15,19 @@ trade). Python 3.10+, `uv`, `mcp` low-level `Server`, `httpx`, `pydantic`.
 uv sync --extra dev          # install (Python 3.10+)
 uv run start                 # run the server over stdio
 uv run pytest                # run the test suite  <- the feedback loop
+uv run pytest --cov          # tests with a coverage report
+uv run ruff check src tests  # lint (import order, pyflakes, pyupgrade, bugbear)
 uv run black src tests       # format
+uv run mypy                  # type check
+uv run pre-commit install    # (once) run ruff+black on every commit
 ```
 
 Run `uv run pytest` before declaring any change done. Tests are pure/offline — they exercise
-the order translation and the confirm-gate by monkeypatching the client, and make no network
-calls. Keep it that way: never hit the live Kalshi API from a test.
+the order translation, the confirm-gate, the HTTP client (via an injected `httpx.MockTransport`),
+the tool registry, config, and PDF extraction, all by monkeypatching or mocking. Make no network
+calls. Keep it that way: never hit the live Kalshi API from a test. CI (`.github/workflows/ci.yml`)
+runs ruff + black + mypy + pytest across Python 3.10–3.13 on every push/PR, and releases are
+gated on that same suite.
 
 ## Architecture (the 60-second map)
 

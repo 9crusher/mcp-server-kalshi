@@ -1,6 +1,6 @@
 [project]
 name = "mcp-server-kalshi"
-version = "0.1.4"
+version = "0.2.0"
 description = "An MCP server implementation for Kalshi prediction market endpoints"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,12 +13,17 @@ dependencies = [
     "pypdf",
     "pydantic == 2.12.0",
     "pydantic-settings == 2.11.0",
-    "pytest_asyncio"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black"
+    "black",
+    "ruff",
+    "mypy",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pre-commit",
 ]
 
 [build-system]
@@ -28,6 +33,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["mcp_server_kalshi"]
 package-dir = { "" = "src" }
+
+[tool.setuptools.package-data]
+# Ship the PEP 561 marker so downstream consumers get our type hints.
+mcp_server_kalshi = ["py.typed"]
 
 [project.scripts]
 start = "mcp_server_kalshi.server:main"
@@ -42,3 +51,27 @@ python_classes = "Test*"
 python_functions = "test_*"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+# E/F: pyflakes+pycodestyle, I: import sorting, UP: pyupgrade, B: bugbear.
+select = ["E", "F", "I", "UP", "B"]
+# Line length is owned by black; the long tool-description strings are intentional.
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src/mcp_server_kalshi"]
+mypy_path = "src"
+warn_unused_ignores = true
+warn_redundant_casts = true
+# Lenient to start (the code is annotated but not exhaustively); tighten over time.
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["mcp_server_kalshi"]
+branch = true

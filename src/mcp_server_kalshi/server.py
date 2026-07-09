@@ -2,8 +2,9 @@ import asyncio
 import json
 import time
 import uuid
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Type
+from typing import Any
 
 import mcp.server.stdio
 import mcp.types as types
@@ -44,7 +45,6 @@ from .kalshi_client.schemas import (
     MCPSchemaBaseModel,
 )
 
-
 KALSHI_BACKGROUND_INFO = """\
 Kalshi is a regulated prediction-market exchange. You trade $1 binary contracts that settle
 to YES ($1) or NO ($0) based on a real-world outcome.
@@ -70,7 +70,7 @@ return a preview and place nothing unless called with confirm=true.
 
 settings = get_settings()
 
-server = Server("kalshi-server")
+server: Server = Server("kalshi-server")
 kalshi_client = KalshiAPIClient(
     base_url=settings.rest_base_url,
     api_key=settings.api_key_value(),
@@ -100,7 +100,7 @@ class ToolRegistry:
         cls,
         name: str,
         description: str,
-        input_schema: Type[MCPSchemaBaseModel],
+        input_schema: type[MCPSchemaBaseModel],
         read_only: bool = True,
         destructive: bool = False,
     ):
@@ -115,7 +115,8 @@ class ToolRegistry:
                     name=name,
                     description=description,
                     inputSchema=input_schema.to_mcp_input_schema(),
-                    annotations=_annotations(read_only, destructive),
+                    # annotations is accepted at runtime; older mcp type stubs omit it.
+                    annotations=_annotations(read_only, destructive),  # type: ignore[call-arg]
                 ),
                 wrapped_handler,
             )
@@ -134,7 +135,7 @@ class ToolRegistry:
         return cls._tools[name][1]
 
 
-def _params(request: dict, model: Type[MCPSchemaBaseModel], drop: tuple = ()) -> dict:
+def _params(request: dict, model: type[MCPSchemaBaseModel], drop: tuple = ()) -> dict:
     """Validate `request` against `model` and return query params (None + `drop` removed)."""
     data = model(**request).model_dump(exclude_none=True)
     for key in drop:
@@ -245,7 +246,9 @@ async def handle_get_market_candlesticks(request: dict):
     input_schema=GetMarketTradesRequest,
 )
 async def handle_get_market_trades(request: dict):
-    return await kalshi_client.get_market_trades(_params(request, GetMarketTradesRequest))
+    return await kalshi_client.get_market_trades(
+        _params(request, GetMarketTradesRequest)
+    )
 
 
 @ToolRegistry.register_tool(
@@ -321,7 +324,9 @@ async def handle_fetch_rules_pdf(request: dict):
             raise ValueError("Provide a url, a series_ticker, or a market ticker.")
         series_resp = await kalshi_client.get_series(series_ticker)
         series = series_resp.get("series", series_resp)
-        field = "contract_terms_url" if req.document == "contract_terms" else "contract_url"
+        field = (
+            "contract_terms_url" if req.document == "contract_terms" else "contract_url"
+        )
         url = series.get(field)
         if not url:
             raise ValueError(

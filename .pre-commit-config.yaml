@@ -1,0 +1,14 @@
+# Local dev hooks mirroring CI. Install once with: pre-commit install
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^(src|tests)/
+
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+        files: ^(src|tests)/
