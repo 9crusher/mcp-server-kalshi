@@ -51,9 +51,26 @@ try:
 except PackageNotFoundError:  # running from source without an install
     __version__ = "0.0.0"
 
-KALSHI_BACKGROUND_INFO = """\
+
+def _background_info(env_label: str, is_production: bool) -> str:
+    """Server MCP `instructions`, with the *resolved* environment stated as fact.
+
+    The environment line is dynamic on purpose: a static "demo unless configured for prod"
+    string leaves the model to guess which one is active, and it tends to assume demo. Stating
+    the real environment here (instructions are always in context) is the primary signal.
+    """
+    env_line = (
+        f"⚠️ ENVIRONMENT: this server is configured for {env_label}. Orders you place are REAL "
+        "and settle for real money — confirm intent before trading."
+        if is_production
+        else f"ENVIRONMENT: this server is configured for {env_label}. Orders are simulated; "
+        "no real money is at stake."
+    )
+    return f"""\
 Kalshi is a regulated prediction-market exchange. You trade $1 binary contracts that settle
 to YES ($1) or NO ($0) based on a real-world outcome.
+
+{env_line}
 
 Hierarchy:
 - Series: a recurring template (e.g. 'KXELONMARS') that owns the legal contract terms,
@@ -70,11 +87,14 @@ Workflow for deep trading:
 3. Understand settlement with get_market_rules, and read the actual contract with fetch_rules_pdf.
 4. Trade with create_order (requires confirm=true) / cancel_order / amend_order.
 
-Safety: this server targets Kalshi's DEMO sandbox unless configured for prod. Order tools
-return a preview and place nothing unless called with confirm=true.
+Call get_environment to re-confirm the active environment at any time. Order tools return a
+preview and place nothing unless called with confirm=true.
 """
 
+
 settings = get_settings()
+
+KALSHI_BACKGROUND_INFO = _background_info(settings.env_label, settings.is_production)
 
 server: Server = Server("kalshi-server")
 kalshi_client = KalshiAPIClient(
@@ -341,6 +361,30 @@ async def handle_fetch_rules_pdf(request: dict):
                 f"contract_url={series.get('contract_url')}"
             )
     return await fetch_pdf_text(url)
+
+
+# =============================== Environment ================================
+@ToolRegistry.register_tool(
+    name="get_environment",
+    description=(
+        "Report which Kalshi environment this server is configured for (demo sandbox vs prod "
+        "real money), the REST base URL in use, and whether trading credentials are configured. "
+        "Call this to confirm the environment before trading rather than guessing."
+    ),
+    input_schema=EmptyRequest,
+)
+async def handle_get_environment(request: dict):
+    return {
+        "environment": settings.env_label,
+        "is_production": settings.is_production,
+        "base_url": settings.rest_base_url,
+        "has_credentials": settings.has_credentials,
+        "note": (
+            "Real money is at stake; orders settle for real."
+            if settings.is_production
+            else "Sandbox environment; orders are simulated and no real money is at stake."
+        ),
+    }
 
 
 # =============================== Exchange ===================================
