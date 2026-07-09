@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.9crusher/mcp-server-kalshi",
-  "description": "An MCP server for deep, end-to-end trading on Kalshi prediction markets: discover, research, read settlement rules, and execute trades.",
+  "description": "MCP server for end-to-end trading on Kalshi prediction markets: discover, research, trade.",
   "repository": {
     "url": "https://github.com/9crusher/mcp-server-kalshi",
     "source": "github"
   },
-  "version": "0.2.0",
+  "version": "0.2.1",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "mcp-server-kalshi",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "runtimeHint": "uvx",
       "transport": { "type": "stdio" },
       "environmentVariables": [
