@@ -1,4 +1,5 @@
 """Tests for RSA-PSS signing and the Kalshi auth header/signing-path construction."""
+
 import base64
 
 import httpx
@@ -20,7 +21,9 @@ def test_sign_pss_text_verifies_with_public_key():
     key.public_key().verify(
         base64.b64decode(sig),
         msg.encode(),
-        padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+        ),
         hashes.SHA256(),
     )
 
@@ -29,7 +32,8 @@ def test_auth_flow_signs_path_without_query():
     key = _make_key()
     auth = KalshiAuth(key, "my-key-id")
     request = httpx.Request(
-        "GET", "https://demo-api.kalshi.co/trade-api/v2/portfolio/orders?limit=5&status=resting"
+        "GET",
+        "https://demo-api.kalshi.co/trade-api/v2/portfolio/orders?limit=5&status=resting",
     )
 
     flow = auth.auth_flow(request)
@@ -44,7 +48,9 @@ def test_auth_flow_signs_path_without_query():
     key.public_key().verify(
         base64.b64decode(sig),
         (ts + "GET" + signed_path).encode(),
-        padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+        padding.PSS(
+            mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH
+        ),
         hashes.SHA256(),
     )
 

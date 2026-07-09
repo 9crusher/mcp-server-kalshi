@@ -1,4 +1,5 @@
 """Tests for MCPSchemaBaseModel.to_mcp_input_schema cleanup of optional/enum fields."""
+
 from mcp_server_kalshi.kalshi_client.schemas import (
     CreateOrderRequest,
     EmptyRequest,

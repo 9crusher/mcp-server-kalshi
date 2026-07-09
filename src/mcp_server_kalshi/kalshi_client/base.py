@@ -1,6 +1,6 @@
 import base64
 import time
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 from cryptography.hazmat.backends import default_backend
@@ -88,17 +88,17 @@ class BaseAPIClient:
     def __init__(
         self,
         base_url: str,
-        api_key: Optional[str] = None,
-        private_key_path: Optional[str] = None,
+        api_key: str | None = None,
+        private_key_path: str | None = None,
         timeout: int = 30,
     ):
         self._base_url: str = base_url.rstrip("/")
         self._timeout: int = timeout
-        self._api_key: Optional[str] = api_key
-        self._private_key: Optional[rsa.RSAPrivateKey] = (
+        self._api_key: str | None = api_key
+        self._private_key: rsa.RSAPrivateKey | None = (
             load_private_key_from_file(private_key_path) if private_key_path else None
         )
-        self._client: Optional[httpx.AsyncClient] = None
+        self._client: httpx.AsyncClient | None = None
 
     @property
     def has_credentials(self) -> bool:
@@ -107,9 +107,10 @@ class BaseAPIClient:
     def _ensure_client(self) -> httpx.AsyncClient:
         """Lazily create the persistent httpx client (attaching auth when available)."""
         if self._client is None:
+            # Inline (rather than self.has_credentials) so the types narrow to non-None.
             auth = (
                 KalshiAuth(self._private_key, self._api_key)
-                if self.has_credentials
+                if self._private_key is not None and self._api_key is not None
                 else None
             )
             self._client = httpx.AsyncClient(
@@ -130,8 +131,8 @@ class BaseAPIClient:
         self,
         method: str,
         path: str,
-        params: Optional[dict] = None,
-        json: Optional[dict] = None,
+        params: dict | None = None,
+        json: dict | None = None,
     ) -> Any:
         client = self._ensure_client()
         url = self._base_url + path
@@ -146,16 +147,16 @@ class BaseAPIClient:
             return {}
         return response.json()
 
-    async def get(self, path: str, params: Optional[dict] = None) -> Any:
+    async def get(self, path: str, params: dict | None = None) -> Any:
         return await self._request("GET", path, params=params)
 
-    async def post(self, path: str, json: Optional[dict] = None) -> Any:
+    async def post(self, path: str, json: dict | None = None) -> Any:
         return await self._request("POST", path, json=json)
 
-    async def delete(self, path: str, params: Optional[dict] = None) -> Any:
+    async def delete(self, path: str, params: dict | None = None) -> Any:
         return await self._request("DELETE", path, params=params)
 
-    async def patch(self, path: str, json: Optional[dict] = None) -> Any:
+    async def patch(self, path: str, json: dict | None = None) -> Any:
         return await self._request("PATCH", path, json=json)
 
     async def aclose(self) -> None:

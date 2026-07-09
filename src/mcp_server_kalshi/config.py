@@ -1,9 +1,8 @@
-from typing import Literal, Optional
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 # Kalshi Trade API base URLs. See https://docs.kalshi.com/getting_started/api_environments
 ENV_REST_BASE = {
@@ -30,14 +29,15 @@ class Settings(BaseSettings):
         description="Which Kalshi environment to target. 'demo' (sandbox, default) or 'prod' (real money).",
     )
     # Optional explicit override of the REST base URL. When unset it is derived from KALSHI_ENV.
-    BASE_URL: Optional[str] = Field(
+    BASE_URL: str | None = Field(
         default=None,
         description="Explicit REST base URL override (including /trade-api/v2). Derived from KALSHI_ENV when unset.",
     )
-    KALSHI_API_KEY: Optional[SecretStr] = Field(
-        default=None, description="Kalshi API key ID (required only for authenticated tools)."
+    KALSHI_API_KEY: SecretStr | None = Field(
+        default=None,
+        description="Kalshi API key ID (required only for authenticated tools).",
     )
-    KALSHI_PRIVATE_KEY_PATH: Optional[str] = Field(
+    KALSHI_PRIVATE_KEY_PATH: str | None = Field(
         default=None,
         description="Path to the Kalshi RSA private key PEM file (required only for authenticated tools).",
     )
@@ -59,7 +59,9 @@ class Settings(BaseSettings):
 
     @property
     def has_credentials(self) -> bool:
-        return self.KALSHI_API_KEY is not None and self.KALSHI_PRIVATE_KEY_PATH is not None
+        return (
+            self.KALSHI_API_KEY is not None and self.KALSHI_PRIVATE_KEY_PATH is not None
+        )
 
     @property
     def is_production(self) -> bool:
@@ -72,11 +74,11 @@ class Settings(BaseSettings):
     def env_label(self) -> str:
         return "PROD (real money)" if self.is_production else "DEMO (sandbox)"
 
-    def api_key_value(self) -> Optional[str]:
+    def api_key_value(self) -> str | None:
         return self.KALSHI_API_KEY.get_secret_value() if self.KALSHI_API_KEY else None
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Return the cached settings instance (constructed lazily on first use)."""
     return Settings()

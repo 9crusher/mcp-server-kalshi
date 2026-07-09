@@ -1,4 +1,5 @@
 """Tests for the friendly->V2 order translation and the confirm-gate guardrail."""
+
 import pytest
 
 from mcp_server_kalshi.kalshi_client.client import (
@@ -17,13 +18,15 @@ def test_series_ticker_derivation():
 @pytest.mark.parametrize(
     "action,side,cents,expected_book_side,expected_price",
     [
-        ("buy", "yes", 12, "bid", "0.1200"),   # buy YES -> bid at yes price
+        ("buy", "yes", 12, "bid", "0.1200"),  # buy YES -> bid at yes price
         ("sell", "yes", 12, "ask", "0.1200"),  # sell YES -> ask at yes price
-        ("buy", "no", 30, "ask", "0.7000"),    # buy NO @30 == sell YES @70
-        ("sell", "no", 30, "bid", "0.7000"),   # sell NO @30 == buy YES @70
+        ("buy", "no", 30, "ask", "0.7000"),  # buy NO @30 == sell YES @70
+        ("sell", "no", 30, "bid", "0.7000"),  # sell NO @30 == buy YES @70
     ],
 )
-def test_create_order_translation(action, side, cents, expected_book_side, expected_price):
+def test_create_order_translation(
+    action, side, cents, expected_book_side, expected_price
+):
     payload = build_create_order_payload(
         ticker="KXELONMARS-99",
         action=action,

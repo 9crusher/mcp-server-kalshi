@@ -13,6 +13,7 @@ rules (including pulling the contract-terms PDFs), and execute trades — all th
 - **Deep rules** — `get_market_rules` consolidates a market's `rules_primary`/`rules_secondary`,
   early-close conditions, settlement sources, and series prohibitions; `fetch_rules_pdf`
   downloads and extracts the text of the actual legal contract PDF so the agent can read it.
+- **Exchange** — `get_exchange_status`, `get_exchange_schedule` (is the market open, and its hours).
 - **Portfolio** — `get_balance`, `get_positions`, `get_fills`, `get_settlements`.
 - **Trading** — `create_order`, `cancel_order`, `amend_order`, `decrease_order`,
   plus `list_orders` / `get_order`.
@@ -84,7 +85,7 @@ and a demo account via the
 ## Local Development
 
 1. Create a `.env` file (see `.env-example`).
-2. Install deps: `uv sync` (add `--extra dev` for dev tools). Requires Python 3.12+.
+2. Install deps: `uv sync` (add `--extra dev` for dev tools). Requires Python 3.10+.
 3. Run: `uv run start`.
 4. Test: `uv run pytest`.
 
@@ -93,6 +94,23 @@ and a demo account via the
 ```bash
 npx @modelcontextprotocol/inspector uv --directory /path/to/mcp-server-kalshi run start
 ```
+
+## Testing & code quality
+
+```bash
+uv sync --extra dev              # install dev tools (ruff, mypy, pytest, ...)
+uv run pytest                    # run the test suite
+uv run pytest --cov              # tests with a coverage report
+uv run ruff check src tests      # lint
+uv run black src tests           # format (add --check to verify only)
+uv run mypy                      # type check
+uv run pre-commit install        # (once) run ruff + black on every commit
+```
+
+Tests are pure/offline — they exercise the order translation and confirm-gate, the HTTP client
+(via an injected `httpx.MockTransport`), the MCP tool registry, config, and PDF extraction, all
+without touching the live Kalshi API. CI (`.github/workflows/ci.yml`) runs ruff + black + mypy +
+pytest across Python 3.10–3.13 on every push/PR, and releases are gated on that same suite.
 
 ## Authentication
 
