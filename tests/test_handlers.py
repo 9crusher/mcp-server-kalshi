@@ -23,6 +23,8 @@ EXPECTED_TOOLS = {
     "get_market_trades",
     "get_market_rules",
     "fetch_rules_pdf",
+    # environment
+    "get_environment",
     # exchange
     "get_exchange_status",
     "get_exchange_schedule",
@@ -61,6 +63,25 @@ def test_every_tool_has_a_valid_input_schema():
 def test_get_handler_unknown_tool_raises():
     with pytest.raises(ValueError, match="Unknown tool"):
         server.ToolRegistry.get_handler("does_not_exist")
+
+
+async def test_get_environment_reports_configured_env():
+    handler = server.ToolRegistry.get_handler("get_environment")
+    out = handler_result(await handler({}))
+
+    # Mirrors whatever the server module resolved at import; no client call needed.
+    assert out["environment"] == server.settings.env_label
+    assert out["is_production"] == server.settings.is_production
+    assert out["base_url"] == server.settings.rest_base_url
+    assert out["has_credentials"] == server.settings.has_credentials
+
+
+def test_background_info_states_the_resolved_environment():
+    # Instructions must assert the environment as fact, not "demo unless configured".
+    prod = server._background_info("PROD (real money)", is_production=True)
+    demo = server._background_info("DEMO (sandbox)", is_production=False)
+    assert "PROD (real money)" in prod and "REAL" in prod
+    assert "DEMO (sandbox)" in demo and "simulated" in demo
 
 
 async def test_list_markets_handler_calls_client(monkeypatch):

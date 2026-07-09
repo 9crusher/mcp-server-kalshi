@@ -25,8 +25,49 @@ jobs:
     - name: Tests
       run: uv run pytest
 
-  deploy:
+  # Build the distribution ONCE. Every downstream job (smoke, deploy) consumes
+  # this exact artifact, so the bytes we smoke-test are the bytes we publish.
+  build:
     needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: '3.10'
+    - name: Build sdist + wheel
+      run: uv build
+    - name: Upload dist
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  # Gate: run the built wheel exactly as `uvx` would — an isolated env with ONLY
+  # the declared runtime deps — then drive a real MCP handshake over stdio.
+  # Catches undeclared deps and packaging defects that the pytest suite (which
+  # runs inside the full dev venv) cannot see. `--no-cache` is essential:
+  # without it uvx may reuse a stale tool env and smoke a previous version.
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: '3.10'
+    - name: Download dist
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - name: Smoke test the wheel via uvx
+      run: python scripts/smoke_test_uvx.py -- uvx --no-cache --from "$(ls dist/*.whl)" mcp-server-kalshi
+
+  deploy:
+    needs: smoke
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -35,28 +76,35 @@ jobs:
       id-token: write
 
     steps:
+    - name: Download dist
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+  # Post-publish: prove the artifact on PyPI actually runs via `uvx`, the way a
+  # user installs it. Retries because the PyPI index takes a moment to serve a
+  # freshly published version.
+  verify-published:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
     - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: '3.10'
-    
-    - name: Install uv
+    - name: Smoke test the published package via uvx
       run: |
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-    
-    - name: Install dependencies
-      run: |
-        uv venv
-        source .venv/bin/activate
-        uv pip install build
-    
-    - name: Build package
-      run: |
-        source .venv/bin/activate
-        uv run python -m build
-    
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@release/v1 
+        version="${GITHUB_REF_NAME#v}"
+        for attempt in 1 2 3 4 5; do
+          if python scripts/smoke_test_uvx.py -- uvx --no-cache "mcp-server-kalshi==${version}"; then
+            exit 0
+          fi
+          echo "attempt ${attempt} failed; PyPI may not have indexed ${version} yet, retrying in 30s"
+          sleep 30
+        done
+        exit 1 
