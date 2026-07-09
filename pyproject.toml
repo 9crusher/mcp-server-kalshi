@@ -1,6 +1,6 @@
 [project]
 name = "mcp-server-kalshi"
-version = "0.2.0"
+version = "0.2.1"
 description = "An MCP server implementation for Kalshi prediction market endpoints"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -31,8 +31,10 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["mcp_server_kalshi"]
 package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.setuptools.package-data]
 # Ship the PEP 561 marker so downstream consumers get our type hints.

@@ -4,6 +4,7 @@ import time
 import uuid
 from collections.abc import Callable
 from functools import wraps
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 import mcp.server.stdio
@@ -44,6 +45,11 @@ from .kalshi_client.schemas import (
     ListSeriesRequest,
     MCPSchemaBaseModel,
 )
+
+try:
+    __version__ = version("mcp-server-kalshi")
+except PackageNotFoundError:  # running from source without an install
+    __version__ = "0.0.0"
 
 KALSHI_BACKGROUND_INFO = """\
 Kalshi is a regulated prediction-market exchange. You trade $1 binary contracts that settle
@@ -556,7 +562,7 @@ async def run():
             write_stream,
             InitializationOptions(
                 server_name="kalshi-server",
-                server_version="0.2.0",
+                server_version=__version__,
                 instructions=KALSHI_BACKGROUND_INFO,
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),
