@@ -6,13 +6,13 @@
     "url": "https://github.com/9crusher/mcp-server-kalshi",
     "source": "github"
   },
-  "version": "0.2.1",
+  "version": "0.2.3",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "mcp-server-kalshi",
-      "version": "0.2.1",
+      "version": "0.2.3",
       "runtimeHint": "uvx",
       "transport": { "type": "stdio" },
       "environmentVariables": [

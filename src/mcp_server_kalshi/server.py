@@ -141,8 +141,7 @@ class ToolRegistry:
                     name=name,
                     description=description,
                     inputSchema=input_schema.to_mcp_input_schema(),
-                    # annotations is accepted at runtime; older mcp type stubs omit it.
-                    annotations=_annotations(read_only, destructive),  # type: ignore[call-arg]
+                    annotations=_annotations(read_only, destructive),
                 ),
                 wrapped_handler,
             )

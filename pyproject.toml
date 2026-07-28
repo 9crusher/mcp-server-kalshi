@@ -1,15 +1,15 @@
 [project]
 name = "mcp-server-kalshi"
-version = "0.2.2"
+version = "0.2.3"
 description = "An MCP server implementation for Kalshi prediction market endpoints"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 
 dependencies = [
-    "mcp>=1.6.0",
+    "mcp>=1.28.1,<2",
     "httpx",
-    "cryptography",
+    "cryptography>=49.0.0",
     "pypdf",
     "pydantic == 2.12.0",
     "pydantic-settings == 2.11.0",
@@ -17,7 +17,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "black",
+    "black>=26.5.1",
     "ruff",
     "mypy",
     "pytest",
