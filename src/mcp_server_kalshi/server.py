@@ -1,5 +1,7 @@
 import asyncio
 import json
+import os
+import signal
 import time
 import uuid
 from collections.abc import Callable
@@ -13,6 +15,7 @@ from mcp.server.lowlevel import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 
 from .config import get_settings
+from .errors import redact_secrets
 from .kalshi_client import KalshiAPIClient
 from .kalshi_client.client import (
     build_amend_order_payload,
@@ -593,9 +596,10 @@ async def handle_list_tools() -> list[types.Tool]:
 async def handle_call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     handler = ToolRegistry.get_handler(name)
     try:
-        return await handler(arguments)
+        return await handler(arguments or {})
     except Exception as exc:
-        return [types.TextContent(type="text", text=f"Error in {name}: {exc}")]
+        sanitized = redact_secrets(str(exc))
+        return [types.TextContent(type="text", text=f"Error in {name}: {sanitized}")]
 
 
 async def run():
@@ -615,5 +619,16 @@ async def run():
         )
 
 
-def main():
+def _handle_shutdown(signum: int, frame: Any) -> None:
+    """Gracefully handle SIGTERM/SIGINT from host supervisor to exit with status 0 immediately."""
+    os._exit(0)
+
+
+def main() -> None:
+    signal.signal(signal.SIGTERM, _handle_shutdown)
+    signal.signal(signal.SIGINT, _handle_shutdown)
     asyncio.run(run())
+
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
