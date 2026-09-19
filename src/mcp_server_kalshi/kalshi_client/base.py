@@ -7,6 +7,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
+from ..errors import KalshiAPIError
+
 
 def load_private_key_from_file(file_path: str) -> rsa.RSAPrivateKey:
     """Load an RSA private key object from a PEM file."""
@@ -59,17 +61,6 @@ class KalshiAuth(httpx.Auth):
         request.headers["KALSHI-ACCESS-SIGNATURE"] = signature
         request.headers["KALSHI-ACCESS-TIMESTAMP"] = timestamp
         yield request
-
-
-class KalshiAPIError(Exception):
-    """Raised when the Kalshi API returns a non-2xx response, carrying the error body."""
-
-    def __init__(self, status_code: int, method: str, path: str, body: Any):
-        self.status_code = status_code
-        self.method = method
-        self.path = path
-        self.body = body
-        super().__init__(f"Kalshi API {status_code} on {method} {path}: {body}")
 
 
 class BaseAPIClient:
