@@ -48,6 +48,7 @@ from .kalshi_client.schemas import (
     ListSeriesRequest,
     MCPSchemaBaseModel,
 )
+from .kalshi_predictit_arb import register_if_enabled as register_kalshi_predictit_arb
 
 try:
     __version__ = version("mcp-server-kalshi")
@@ -584,6 +585,11 @@ async def handle_decrease_order(request: dict):
     req = DecreaseOrderRequest(**request)
     payload = build_decrease_order_payload(req.reduce_by, req.reduce_to)
     return await kalshi_client.decrease_order(req.order_id, payload)
+
+
+# =============================== Optional tools ==============================
+# Off unless KALSHI_PREDICTIT_ARB_ENABLED=true (third-party feed; see its module).
+register_kalshi_predictit_arb(ToolRegistry)
 
 
 # =============================== Server wiring ===============================

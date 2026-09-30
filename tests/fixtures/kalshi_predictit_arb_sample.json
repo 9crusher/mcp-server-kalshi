@@ -1,0 +1,60 @@
+{
+  "_notice": "SAMPLE DATA for offline demo/tests only. Fictional pairs and prices, NOT real market data.",
+  "q": "",
+  "mode": "all",
+  "opportunities": [
+    {
+      "event": "SAMPLE State XX governor party winner? - Republican",
+      "match_score": 0.74,
+      "kalshi": {"ticker": "SAMPLE-GOVPARTYXX-26-R", "yes_bid_c": 61, "yes_ask_c": 62},
+      "predictit": {"market": "SAMPLE State XX governor party winner?", "contract": "Republican", "yes_ask_c": 70, "no_ask_c": 33, "position_limit_usd": 850},
+      "best_direction": {
+        "direction": "YES_KALSHI__NO_PREDICTIT",
+        "kalshi_price_c": 62, "predictit_price_c": 33, "stake_c": 95,
+        "raw_spread_c": 5, "net_if_yes_wins_c": 3.1, "net_if_no_wins_c": 5.4,
+        "net_yield_c": 3.1, "net_yield_pct": 3.26,
+        "fees": {"kalshi_taker_c": 2, "predictit_profit_fee_c": 6.7, "predictit_withdrawal_drag_c": 3.35}
+      },
+      "days_to_settlement": 120, "roc_annualized_pct": 9.9, "executable": true,
+      "liquidity": {"vwap_buy_c": {"100": 62, "500": 62, "1000": 63}, "book_depth_usd": 12000.0},
+      "slippage_ok_100": true
+    },
+    {
+      "event": "SAMPLE State YY Senate winner? - Democratic",
+      "match_score": 0.69,
+      "kalshi": {"ticker": "SAMPLE-SENATEYY-26-D", "yes_bid_c": 44, "yes_ask_c": 45},
+      "predictit": {"market": "SAMPLE Which party will win the YY Senate race?", "contract": "Democratic", "yes_ask_c": 41, "no_ask_c": 61, "position_limit_usd": 850},
+      "best_direction": {
+        "direction": "YES_PREDICTIT__NO_KALSHI",
+        "kalshi_price_c": 56, "predictit_price_c": 41, "stake_c": 97,
+        "raw_spread_c": 3, "net_if_yes_wins_c": 1.2, "net_if_no_wins_c": 1.4,
+        "net_yield_c": 1.2, "net_yield_pct": 1.24,
+        "fees": {"kalshi_taker_c": 2, "predictit_profit_fee_c": 5.9, "predictit_withdrawal_drag_c": 2.95}
+      },
+      "days_to_settlement": 400, "roc_annualized_pct": 1.1, "executable": true,
+      "liquidity": {"vwap_buy_c": {"100": 56, "500": 57, "1000": 57}, "book_depth_usd": 4000.0},
+      "slippage_ok_100": true
+    },
+    {
+      "event": "SAMPLE District ZZ-01 House winner? - Republican",
+      "match_score": 0.66,
+      "kalshi": {"ticker": "SAMPLE-HOUSEZZ01-26-R", "yes_bid_c": 80, "yes_ask_c": 81},
+      "predictit": {"market": "SAMPLE ZZ-01 House race", "contract": "Republican", "yes_ask_c": 83, "no_ask_c": 19, "position_limit_usd": 850},
+      "best_direction": {
+        "direction": "YES_KALSHI__NO_PREDICTIT",
+        "kalshi_price_c": 81, "predictit_price_c": 19, "stake_c": 100,
+        "raw_spread_c": 0, "net_if_yes_wins_c": -2.0, "net_if_no_wins_c": 4.3,
+        "net_yield_c": -2.0, "net_yield_pct": -2.0,
+        "fees": {"kalshi_taker_c": 2, "predictit_profit_fee_c": 8.1, "predictit_withdrawal_drag_c": 4.05}
+      },
+      "days_to_settlement": 400, "roc_annualized_pct": -1.8, "executable": false,
+      "liquidity": {"vwap_buy_c": {"100": 81, "500": 82, "1000": 82}, "book_depth_usd": 2500.0},
+      "slippage_ok_100": false
+    },
+    {
+      "event": "SAMPLE record with missing fields (clients must tolerate this)"
+    }
+  ],
+  "stats": {"pairs_evaluated": 4, "executable": 2, "kalshi_markets_scanned": 4, "predictit_contracts_scanned": 4, "duration_ms": 0},
+  "fetched_at": "2026-01-01T00:00:00.000Z"
+}
