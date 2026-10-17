@@ -26,7 +26,7 @@ rules (including pulling the contract-terms PDFs), and execute trades — all th
 - Order-placing tools (`create_order`, `amend_order`) require `confirm=true`. Without it they
   return a **preview** — a human-readable summary and the exact payload — and place nothing.
 - Credentials are **optional**: all market/rules tools work unauthenticated. Only portfolio
-  and order tools need an API key + RSA private key.
+  and order tools need an API key + RSA or Ed25519 private key.
 
 ### Intuitive order model
 
@@ -40,7 +40,7 @@ This server exposes the natural model instead — `action` (buy/sell) + `side` (
 |----------|---------|---------|
 | `KALSHI_ENV` | `demo` | `demo` (sandbox) or `prod` (real money). Derives the base URL. |
 | `KALSHI_API_KEY` | _(none)_ | Kalshi API key ID. Required only for authenticated tools. |
-| `KALSHI_PRIVATE_KEY_PATH` | _(none)_ | Path to your RSA private key `.pem`. Required for authenticated tools. |
+| `KALSHI_PRIVATE_KEY_PATH` | _(none)_ | Path to your RSA or Ed25519 private key `.pem`. Required for authenticated tools. |
 | `BASE_URL` | _(derived)_ | Optional explicit REST base override (must include `/trade-api/v2`). |
 
 See `.env-example`. Get API credentials at
@@ -58,7 +58,7 @@ and a demo account via the
     "env": {
       "KALSHI_ENV": "demo",
       "KALSHI_API_KEY": "<YOUR KALSHI API KEY>",
-      "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR RSA KEY FILE"
+      "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR PRIVATE KEY FILE"
     }
   }
 }
@@ -77,7 +77,7 @@ and a demo account via the
     "env": {
       "KALSHI_ENV": "demo",
       "KALSHI_API_KEY": "<YOUR KALSHI API KEY>",
-      "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR RSA KEY FILE"
+      "KALSHI_PRIVATE_KEY_PATH": "PATH TO YOUR PRIVATE KEY FILE"
     }
   }
 }
@@ -115,7 +115,9 @@ pytest across Python 3.10–3.13 on every push/PR, and releases are gated on tha
 
 ## Authentication
 
-Requests are signed with RSA-PSS (MGF1-SHA256, max salt). Each authenticated request sends
+Requests are signed with the API key's own scheme: Ed25519 keys sign the message directly,
+and RSA keys use RSA-PSS (MGF1-SHA256, max salt). The key type is read from the parsed
+key, not the PEM header. Each authenticated request sends
 `KALSHI-ACCESS-KEY`, `KALSHI-ACCESS-TIMESTAMP`, and `KALSHI-ACCESS-SIGNATURE`, where the signed
 message is `timestamp_ms + METHOD + path` (path includes `/trade-api/v2`, excludes the query
 string).

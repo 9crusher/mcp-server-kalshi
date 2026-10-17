@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     )
     KALSHI_PRIVATE_KEY_PATH: str | None = Field(
         default=None,
-        description="Path to the Kalshi RSA private key PEM file (required only for authenticated tools).",
+        description="Path to the Kalshi RSA or Ed25519 private key PEM file (required only for authenticated tools).",
     )
 
     model_config = SettingsConfigDict(

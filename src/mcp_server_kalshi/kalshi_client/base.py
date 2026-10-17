@@ -5,20 +5,25 @@ from typing import Any
 import httpx
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.asymmetric import ed25519, padding, rsa
 
 from ..errors import KalshiAPIError
 
+# Kalshi accepts RSA and Ed25519 API keys. The type comes from the parsed key, not the
+# PEM banner: PKCS#8 RSA and Ed25519 keys both start with "BEGIN PRIVATE KEY".
+KalshiPrivateKey = rsa.RSAPrivateKey | ed25519.Ed25519PrivateKey
 
-def load_private_key_from_file(file_path: str) -> rsa.RSAPrivateKey:
-    """Load an RSA private key object from a PEM file."""
+
+def load_private_key_from_file(file_path: str) -> KalshiPrivateKey:
+    """Load an RSA or Ed25519 private key object from a PEM file."""
     with open(file_path, "rb") as key_file:
         private_key = serialization.load_pem_private_key(
             key_file.read(), password=None, backend=default_backend()
         )
-    if not isinstance(private_key, rsa.RSAPrivateKey):
+    if not isinstance(private_key, KalshiPrivateKey):
         raise ValueError(
-            f"Expected an RSA private key in {file_path}, got {type(private_key).__name__}"
+            f"Expected an RSA or Ed25519 private key in {file_path}, "
+            f"got {type(private_key).__name__}"
         )
     return private_key
 
@@ -38,14 +43,30 @@ def sign_pss_text(private_key: rsa.RSAPrivateKey, text: str) -> str:
     return base64.b64encode(signature).decode()
 
 
+def sign_text(private_key: KalshiPrivateKey, text: str) -> str:
+    """Sign text with the scheme that matches the key and base64-encode it.
+
+    Ed25519 keys sign the message directly (RFC 8032); RSA keys use :func:`sign_pss_text`.
+    """
+    if isinstance(private_key, ed25519.Ed25519PrivateKey):
+        return base64.b64encode(private_key.sign(text.encode())).decode()
+    if isinstance(private_key, rsa.RSAPrivateKey):
+        return sign_pss_text(private_key, text)
+    raise ValueError(
+        f"Unsupported private key type {type(private_key).__name__}; "
+        "Kalshi API keys must be RSA or Ed25519"
+    )
+
+
 class KalshiAuth(httpx.Auth):
     """Signs each request with the Kalshi API-key headers.
 
     The signed message is ``timestamp_ms + METHOD + path`` where ``path`` includes the
-    ``/trade-api/v2`` prefix but EXCLUDES the query string.
+    ``/trade-api/v2`` prefix but EXCLUDES the query string. The message and headers are
+    the same for RSA and Ed25519 keys; only the signature scheme differs.
     """
 
-    def __init__(self, private_key: rsa.RSAPrivateKey, api_key: str):
+    def __init__(self, private_key: KalshiPrivateKey, api_key: str):
         self._private_key = private_key
         self._api_key = api_key
 
@@ -55,7 +76,7 @@ class KalshiAuth(httpx.Auth):
         path = request.url.raw_path.decode().split("?", 1)[0]
         timestamp = str(int(time.time() * 1000))
         msg_string = timestamp + method + path
-        signature = sign_pss_text(self._private_key, msg_string)
+        signature = sign_text(self._private_key, msg_string)
 
         request.headers["KALSHI-ACCESS-KEY"] = self._api_key
         request.headers["KALSHI-ACCESS-SIGNATURE"] = signature
@@ -71,9 +92,9 @@ class BaseAPIClient:
     helpers are relative to that (e.g. ``/portfolio/balance``).
 
     Authentication is optional: when both ``api_key`` and ``private_key_path`` are
-    provided every request is RSA-PSS signed; otherwise requests are sent unsigned, which
-    is fine for public market-data endpoints. Authenticated endpoints raise a clear error
-    if creds are missing.
+    provided every request is signed (RSA-PSS or Ed25519); otherwise requests are sent
+    unsigned, which is fine for public market-data endpoints. Authenticated endpoints
+    raise a clear error if creds are missing.
     """
 
     def __init__(
@@ -86,7 +107,7 @@ class BaseAPIClient:
         self._base_url: str = base_url.rstrip("/")
         self._timeout: int = timeout
         self._api_key: str | None = api_key
-        self._private_key: rsa.RSAPrivateKey | None = (
+        self._private_key: KalshiPrivateKey | None = (
             load_private_key_from_file(private_key_path) if private_key_path else None
         )
         self._client: httpx.AsyncClient | None = None
